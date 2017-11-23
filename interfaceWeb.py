@@ -5,26 +5,16 @@ from datetime import datetime, timedelta
 
 app = Flask(__name__)
 
-@app.route('/login')
+@app.route('/login', methods=['GET'])
 def loginPage():
-    return '''
-            <p> Sistema de recomendação: </p>
-            <p> Login: <input type="text" id="upper"> </p>
-            <p> Senha: <input type="text" id="lower"> </p>
-            <button type="button" onclick="foo('upper','lower')"> Entrar </button>
-            <p> <a href="/cadastro">criar conta</a> </p>
-            '''
+    return render_template('login.html')
 
-@app.route('/cadastro')
+@app.route('/cadastro', methods = ['GET', 'POST'])
 def cadastroPage():
-    return '''
-            <p> Cadastro: </p>
-            <p> Nome: <input type="text" id="upper"> </p>
-            <p> Login: <input type="text" id="upper"> </p>
-            <p> Senha: <input type="text" id="lower"> </p>
-            <button type="button" onclick="foo('upper','lower')"> Cadastrar </button>
-            '''
-
+    if request.method == 'GET':
+        return render_template('cadastro.html')
+    else:
+        request.
 
 
 if __name__ == '__main__':
