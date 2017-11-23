@@ -5,17 +5,32 @@ from datetime import datetime, timedelta
 
 app = Flask(__name__)
 
-@app.route('/login', methods=['GET'])
+def stubCreateUser(name, login, password):
+    pass
+
+def stubAuthUser(login, password):
+    pass
+
+@app.route('/login', methods=['GET', 'POST'])
 def loginPage():
-    return render_template('login.html')
-
-@app.route('/cadastro', methods = ['GET', 'POST'])
-def cadastroPage():
     if request.method == 'GET':
-        return render_template('cadastro.html')
+        return render_template('login.html')
     else:
-        request.
+        login = request.form['login']
+        password = request.form['password']
+        stubAuthUser(login, password)
+        return login + ' ' + password
 
+@app.route('/signup', methods = ['GET', 'POST'])
+def signupPage():
+    if request.method == 'GET':
+        return render_template('signup.html')
+    else:
+        name = request.form['name']
+        login = request.form['login']
+        password = request.form['password']
+        stubCreateUser(name, login, password)
+        return render_template('sucessfullSignup.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
