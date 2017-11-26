@@ -5,11 +5,79 @@ from datetime import datetime, timedelta
 
 app = Flask(__name__)
 
+example = [('Formal methods', 3.217777777777778), ('Programming language theory', 3.1928571428571435), ('Concurrency', 3.145), ('Software engineering', 2.5421428571428573), ('Databases', 2.488)]
+
 def stubCreateUser(name, login, password):
     pass
 
 def stubAuthUser(login, password):
     pass
+
+def getRecomendation(user):
+    pass
+
+def getAllPapers():
+    pass
+
+def getPaperDataFromDb(paperId):
+    pass
+
+def stubEvaluatePaper(paperId, grade):
+    pass
+
+def madeHtmlRecomendation(user):
+    papers = getRecomendation(user)
+    papers = example
+    fileHtml = open('templates/recommendation.html', 'w')
+    html = '''<html><body>
+        <p> Recommended papers for you: </p> '''
+
+    for paper in papers:
+        partial = '''<p> - <a href="/paper">''' + paper[0] + ''' (''' + str(paper[1]) + ''')</a> </p>'''
+        html += partial
+    html += '''</body></html>'''
+    fileHtml.write(html)
+    fileHtml.close()
+
+def generatePaperPage(paperId):
+    fileHtml = open('templates/paper.html', 'w')
+
+    paperJson = getPaperDataFromDb(paperId)
+    paperJson = {'name': 'Formal methods', 'authors': 'Cicrano, beltrano'}
+    html = '''<html><body>
+            <p> Paper </p> '''
+
+    for field in paperJson.keys():
+        partial = '''<p> - ''' + field + ''' : ''' + paperJson[field] + '''</p>'''
+        html += partial
+
+    form = '''<form method="POST">
+
+    <br> Evaluate this paper <input type="text" name="score"></br>
+    <input type="submit" value="Ok">
+    </form>
+    '''
+
+    html += form
+    html += '''</body></html>'''
+
+    fileHtml.write(html)
+    fileHtml.close()
+
+@app.route('/mainPage/<userId>', methods=['GET'])
+def userMainPage(userId):
+    madeHtmlRecomendation(userId)
+    return render_template('recommendation.html')
+
+@app.route('/paper/<paperId>', methods=['GET', 'POST'])
+def paperPage(paperId):
+    if request.method == 'GET':
+        generatePaperPage(paperId)
+        return render_template('paper.html')
+    else:
+        paperGrade = request.form['score']
+        stubEvaluatePaper(paperId, paperGrade)
+        return render_template('paperEvaluated.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def loginPage():
