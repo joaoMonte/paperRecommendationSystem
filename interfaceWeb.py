@@ -6,6 +6,8 @@ from datetime import datetime, timedelta
 app = Flask(__name__)
 
 example = [('Formal methods', 3.217777777777778), ('Programming language theory', 3.1928571428571435), ('Concurrency', 3.145), ('Software engineering', 2.5421428571428573), ('Databases', 2.488)]
+userId = '1234567'
+
 
 def stubCreateUser(name, login, password):
     pass
@@ -35,7 +37,7 @@ def madeHtmlRecomendation(user):
         <p> Recommended papers for you: </p> '''
 
     for paper in papers:
-        partial = '''<p> - <a href="/paper">''' + paper[0] + ''' (''' + str(paper[1]) + ''')</a> </p>'''
+        partial = '''<p> - <a href="/paper/1">''' + paper[0] + ''' (''' + str(paper[1]) + ''')</a> </p>'''
         html += partial
 
     partial = ""
@@ -64,6 +66,8 @@ def generatePaperPage(paperId):
     <br> Evaluate this paper <input type="text" name="score"></br>
     <input type="submit" value="Ok">
     </form>
+    <p> <a href="/mainPage"> << Back </a></p>
+
     '''
 
     html += form
@@ -72,9 +76,8 @@ def generatePaperPage(paperId):
     fileHtml.write(html)
     fileHtml.close()
 
-@app.route('/mainPage/<userId>', methods=['GET'])
-def userMainPage(userId):
-    madeHtmlRecomendation(userId)
+@app.route('/mainPage', methods=['GET'])
+def userMainPage():
     return render_template('recommendation.html')
 
 @app.route('/paper/<paperId>', methods=['GET', 'POST'])
@@ -89,13 +92,15 @@ def paperPage(paperId):
 
 @app.route('/login', methods=['GET', 'POST'])
 def loginPage():
+    global userId
     if request.method == 'GET':
         return render_template('login.html')
     else:
         login = request.form['login']
         password = request.form['password']
-        stubAuthUser(login, password)
-        return login + ' ' + password
+        userId = stubAuthUser(login, password)
+        madeHtmlRecomendation(userId)
+        return render_template('recommendation.html')
 
 @app.route('/signup', methods = ['GET', 'POST'])
 def signupPage():
