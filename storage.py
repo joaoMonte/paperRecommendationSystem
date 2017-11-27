@@ -22,13 +22,14 @@ def createUser(login, password, name):
 
 def getUser(login, password):
     user = db[users].find_one({'login':login, 'password':password})
-    return user
+    if user: return user['_id']
+    else: return None
 
 
-def addPaper(title,link):
+def addPaper(title,link, author, year):
     paper = db[papers].find_one({'title': title})
     if paper == None:
-        paper = {'title':title, 'link':link}
+        paper = {'title':title, 'link':link, 'author':author, 'year':year}
         paperId = db[papers].insert_one(paper)
         return paperId
     else:

@@ -2,6 +2,7 @@ from flask import *
 import urllib3
 import json
 from datetime import datetime, timedelta
+import storage
 
 app = Flask(__name__)
 
@@ -9,19 +10,10 @@ example = [('Formal methods', 3.217777777777778), ('Programming language theory'
 userId = '1234567'
 
 
-def stubCreateUser(name, login, password):
-    pass
-
-def stubAuthUser(login, password):
-    pass
-
 def getRecomendation(user):
     pass
 
 def getAllPapers():
-    pass
-
-def getPaperDataFromDb(paperId):
     pass
 
 def stubEvaluatePaper(paperId, grade):
@@ -34,6 +26,7 @@ def madeHtmlRecomendation(user):
     papers = example
     fileHtml = open('templates/recommendation.html', 'w')
     html = '''<html><body>
+        <p> <a href="/uploadPaper"> Upload a paper! </a> </p>
         <p> Recommended papers for you: </p> '''
 
     for paper in papers:
@@ -52,8 +45,7 @@ def madeHtmlRecomendation(user):
 def generatePaperPage(paperId):
     fileHtml = open('templates/paper.html', 'w')
 
-    paperJson = getPaperDataFromDb(paperId)
-    paperJson = {'name': 'Formal methods', 'authors': 'Cicrano, beltrano'}
+    paperJson = storage.getPaper(paperId)
     html = '''<html><body>
             <p> Paper </p> '''
 
@@ -75,6 +67,20 @@ def generatePaperPage(paperId):
 
     fileHtml.write(html)
     fileHtml.close()
+
+@app.route('/uploadPaper', methods=['GET', 'POST'])
+def uploadPaper():
+    global userId
+    if request.method == 'GET':
+        return render_template('uploadPaper.html')
+    else:
+        title = request.form['title']
+        link = request.form['link']
+        author = request.form['author']
+        year = request.form['year']
+
+        storage.addPaper(title, link, author, year)
+        return render_template('sucessfullUpload.html')
 
 @app.route('/mainPage', methods=['GET'])
 def userMainPage():
@@ -98,9 +104,13 @@ def loginPage():
     else:
         login = request.form['login']
         password = request.form['password']
-        userId = stubAuthUser(login, password)
-        madeHtmlRecomendation(userId)
-        return render_template('recommendation.html')
+        userId = storage.getUser(login, password)
+        if userId:
+            madeHtmlRecomendation(userId)
+            return render_template('recommendation.html')
+        else:
+            return render_template('invalidLogin.html')
+
 
 @app.route('/signup', methods = ['GET', 'POST'])
 def signupPage():
@@ -110,7 +120,7 @@ def signupPage():
         name = request.form['name']
         login = request.form['login']
         password = request.form['password']
-        stubCreateUser(name, login, password)
+        storage.createUser(login, password, name)
         return render_template('sucessfullSignup.html')
 
 if __name__ == '__main__':
