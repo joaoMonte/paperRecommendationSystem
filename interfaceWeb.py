@@ -27,6 +27,8 @@ def stubEvaluatePaper(paperId, grade):
 
 def madeHtmlRecomendation(user):
     papers = getRecomendation(user)
+    allPapers = getAllPapers()
+    allPapers = {'p1':'id', 'p2':'id', 'p3':'id', 'p4':'id', 'p5':'id', 'p6':'id', 'p7':'id', 'p8':'id', 'p9':'id', 'p10':'id'}
     papers = example
     fileHtml = open('templates/recommendation.html', 'w')
     html = '''<html><body>
@@ -35,6 +37,12 @@ def madeHtmlRecomendation(user):
     for paper in papers:
         partial = '''<p> - <a href="/paper">''' + paper[0] + ''' (''' + str(paper[1]) + ''')</a> </p>'''
         html += partial
+
+    partial = ""
+    for paper in allPapers.keys():
+        partial += '''<p> - <a href="/paper/''' + allPapers[paper] + '''">''' + paper + ''' </a> </p>'''
+    html += '''<p> Select a paper to evalue: </p>'''
+    html += partial
     html += '''</body></html>'''
     fileHtml.write(html)
     fileHtml.close()
