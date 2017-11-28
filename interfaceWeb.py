@@ -3,6 +3,7 @@ import urllib3
 import json
 from datetime import datetime, timedelta
 import storage
+import Recommender
 
 app = Flask(__name__)
 
@@ -11,7 +12,10 @@ userId = '1234567'
 
 
 def getRecomendation(user):
-    pass
+    r = Recommender(user)
+    r.computeDeviations() # calc similarity matrix
+    user_raintgs = example[user]# aqui vai ser o vetor de avaliacoes que vem do BD
+    result = r.slopeOneRecommendations(user_raintgs)
 
 def madeHtmlRecomendation():
     #papers = getRecomendation(user)
@@ -82,14 +86,25 @@ def userMainPage():
     madeHtmlRecomendation()
     return render_template('recommendation.html')
 
+@app.route('/evaluations')
+def getEVal():
+    global userId
+    output = []
+    cursor = storage.getUserEvaluation(userId)
+    for evaluation in cursor:
+        output.append(evaluation)
+    return str(output)
+
 @app.route('/paper/<paperId>', methods=['GET', 'POST'])
 def paperPage(paperId):
+    global userId
     if request.method == 'GET':
         generatePaperPage(paperId)
         return render_template('paper.html')
     else:
         paperGrade = request.form['score']
-        #stubEvaluatePaper(paperId, paperGrade)
+        storage.addEvaluation(userId, paperId, paperGrade)
+
         return render_template('paperEvaluated.html')
 
 @app.route('/login', methods=['GET', 'POST'])

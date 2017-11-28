@@ -1,7 +1,7 @@
 # source: http://guidetodatamining.com/chapter3/
 from math import sqrt
 
-class recommender:
+class Recommender:
 
    def __init__(self, data, k=1, metric='pearson', n=5):
       """ initialize recommender
