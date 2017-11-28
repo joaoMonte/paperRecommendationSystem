@@ -13,16 +13,9 @@ userId = '1234567'
 def getRecomendation(user):
     pass
 
-def getAllPapers():
-    pass
-
-def stubEvaluatePaper(paperId, grade):
-    pass
-
-def madeHtmlRecomendation(user):
-    papers = getRecomendation(user)
-    allPapers = getAllPapers()
-    allPapers = {'p1':'id', 'p2':'id', 'p3':'id', 'p4':'id', 'p5':'id', 'p6':'id', 'p7':'id', 'p8':'id', 'p9':'id', 'p10':'id'}
+def madeHtmlRecomendation():
+    #papers = getRecomendation(user)
+    allPapers = storage.getAllpapers()
     papers = example
     fileHtml = open('templates/recommendation.html', 'w')
     html = '''<html><body>
@@ -34,8 +27,8 @@ def madeHtmlRecomendation(user):
         html += partial
 
     partial = ""
-    for paper in allPapers.keys():
-        partial += '''<p> - <a href="/paper/''' + allPapers[paper] + '''">''' + paper + ''' </a> </p>'''
+    for paper in allPapers:
+        partial += '''<p> - <a href="/paper/''' + str(paper['_id']) + '''">''' + paper['title'] + ''' </a> </p>'''
     html += '''<p> Select a paper to evalue: </p>'''
     html += partial
     html += '''</body></html>'''
@@ -50,8 +43,9 @@ def generatePaperPage(paperId):
             <p> Paper </p> '''
 
     for field in paperJson.keys():
-        partial = '''<p> - ''' + field + ''' : ''' + paperJson[field] + '''</p>'''
-        html += partial
+        if field != '_id':
+            partial = '''<p> - ''' + field + ''' : ''' + paperJson[field] + '''</p>'''
+            html += partial
 
     form = '''<form method="POST">
 
@@ -84,6 +78,8 @@ def uploadPaper():
 
 @app.route('/mainPage', methods=['GET'])
 def userMainPage():
+    global userId
+    madeHtmlRecomendation()
     return render_template('recommendation.html')
 
 @app.route('/paper/<paperId>', methods=['GET', 'POST'])
@@ -93,7 +89,7 @@ def paperPage(paperId):
         return render_template('paper.html')
     else:
         paperGrade = request.form['score']
-        stubEvaluatePaper(paperId, paperGrade)
+        #stubEvaluatePaper(paperId, paperGrade)
         return render_template('paperEvaluated.html')
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -106,7 +102,7 @@ def loginPage():
         password = request.form['password']
         userId = storage.getUser(login, password)
         if userId:
-            madeHtmlRecomendation(userId)
+            madeHtmlRecomendation()
             return render_template('recommendation.html')
         else:
             return render_template('invalidLogin.html')

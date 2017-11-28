@@ -36,10 +36,13 @@ def addPaper(title,link, author, year):
         return "paper already exists"
 
 
-def getPaper(title):
-    paper = db[papers].find_one({'title': title})
+def getPaper(paperId):
+    paper = db[papers].find_one({'_id': ObjectId(paperId)})
     return paper
 
+def getAllpapers():
+    allPapers = db[papers].find()
+    return allPapers
 
 def addEvaluation(userLogin, paperTitle, score):
     collection = "evaluation"+userLogin
