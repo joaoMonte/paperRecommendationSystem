@@ -22,39 +22,43 @@ def createUser(login, password, name):
 
 def getUser(login, password):
     user = db[users].find_one({'login':login, 'password':password})
-    return user
+    if user: return user['_id']
+    else: return None
 
 
-def addPaper(title,link):
+def addPaper(title,link, author, year):
     paper = db[papers].find_one({'title': title})
     if paper == None:
-        paper = {'title':title, 'link':link}
+        paper = {'title':title, 'link':link, 'author':author, 'year':year}
         paperId = db[papers].insert_one(paper)
         return paperId
     else:
         return "paper already exists"
 
 
-def getPaper(title):
-    paper = db[papers].find_one({'title': title})
+def getPaper(paperId):
+    paper = db[papers].find_one({'_id': ObjectId(paperId)})
     return paper
 
+def getAllpapers():
+    allPapers = db[papers].find()
+    return allPapers
 
-def addEvaluation(userLogin, paperTitle, score):
-    collection = "evaluation"+userLogin
-    evaluation = db[collection].find_one({'paper':paperTitle})
-    new_evaluation = {'paper': paperTitle, 'score': score}
+def addEvaluation(userId, paperId, score):
+    collection = "evaluation"+str(userId)
+    evaluation = db[collection].find_one({'paper': paperId})
+    new_evaluation = {'paper': paperId, 'score': score}
     if evaluation == None:
         evaluationId = db[collection].insert_one(new_evaluation)
     else:
-        evaluationId = db[collection].find_one_and_replace({'paper':paperTitle},
+        evaluationId = db[collection].find_one_and_replace({'paper':paperId},
                                                              new_evaluation,
                                                              {'returnNewDocument':True})
     return evaluationId
 
 
-def getUserEvaluation(userLogin):
-    evaluations = db["evaluation" + userLogin].find()
+def getUserEvaluation(userId):
+    evaluations = db["evaluation" + str(userId)].find()
     return evaluations
 
 
@@ -63,7 +67,7 @@ def getAllEvaluations():
     userList = db[users].find()
     result = {}
     for user in userList:
-        userEvaluations = getUserEvaluation(user["login"])
+        userEvaluations = getUserEvaluation(str(user["_id"]))
         userResult = {}
         for evaluation in userEvaluations:
             userResult[evaluation["paper"]] = evaluation['score']

@@ -2,24 +2,126 @@ from flask import *
 import urllib3
 import json
 from datetime import datetime, timedelta
+import storage
+import Recommender
 
 app = Flask(__name__)
 
-def stubCreateUser(name, login, password):
-    pass
+example = [('Formal methods', 3.217777777777778), ('Programming language theory', 3.1928571428571435), ('Concurrency', 3.145), ('Software engineering', 2.5421428571428573), ('Databases', 2.488)]
+userId = '1234567'
 
-def stubAuthUser(login, password):
-    pass
+
+def getRecomendation(user):
+    r = Recommender(user)
+    r.computeDeviations() # calc similarity matrix
+    user_raintgs = example[user]# aqui vai ser o vetor de avaliacoes que vem do BD
+    result = r.slopeOneRecommendations(user_raintgs)
+
+def madeHtmlRecomendation():
+    #papers = getRecomendation(user)
+    allPapers = storage.getAllpapers()
+    papers = example
+    fileHtml = open('templates/recommendation.html', 'w')
+    html = '''<html><body>
+        <p> <a href="/uploadPaper"> Upload a paper! </a> </p>
+        <p> Recommended papers for you: </p> '''
+
+    for paper in papers:
+        partial = '''<p> - <a href="/paper/1">''' + paper[0] + ''' (''' + str(paper[1]) + ''')</a> </p>'''
+        html += partial
+
+    partial = ""
+    for paper in allPapers:
+        partial += '''<p> - <a href="/paper/''' + str(paper['_id']) + '''">''' + paper['title'] + ''' </a> </p>'''
+    html += '''<p> Select a paper to evalue: </p>'''
+    html += partial
+    html += '''</body></html>'''
+    fileHtml.write(html)
+    fileHtml.close()
+
+def generatePaperPage(paperId):
+    fileHtml = open('templates/paper.html', 'w')
+
+    paperJson = storage.getPaper(paperId)
+    html = '''<html><body>
+            <p> Paper </p> '''
+
+    for field in paperJson.keys():
+        if field != '_id':
+            partial = '''<p> - ''' + field + ''' : ''' + paperJson[field] + '''</p>'''
+            html += partial
+
+    form = '''<form method="POST">
+
+    <br> Evaluate this paper <input type="text" name="score"></br>
+    <input type="submit" value="Ok">
+    </form>
+    <p> <a href="/mainPage"> << Back </a></p>
+
+    '''
+
+    html += form
+    html += '''</body></html>'''
+
+    fileHtml.write(html)
+    fileHtml.close()
+
+@app.route('/uploadPaper', methods=['GET', 'POST'])
+def uploadPaper():
+    global userId
+    if request.method == 'GET':
+        return render_template('uploadPaper.html')
+    else:
+        title = request.form['title']
+        link = request.form['link']
+        author = request.form['author']
+        year = request.form['year']
+
+        storage.addPaper(title, link, author, year)
+        return render_template('sucessfullUpload.html')
+
+@app.route('/mainPage', methods=['GET'])
+def userMainPage():
+    global userId
+    madeHtmlRecomendation()
+    return render_template('recommendation.html')
+
+@app.route('/evaluations')
+def getEVal():
+    global userId
+    output = []
+    cursor = storage.getUserEvaluation(userId)
+    for evaluation in cursor:
+        output.append(evaluation)
+    return str(output)
+
+@app.route('/paper/<paperId>', methods=['GET', 'POST'])
+def paperPage(paperId):
+    global userId
+    if request.method == 'GET':
+        generatePaperPage(paperId)
+        return render_template('paper.html')
+    else:
+        paperGrade = request.form['score']
+        storage.addEvaluation(userId, paperId, paperGrade)
+
+        return render_template('paperEvaluated.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def loginPage():
+    global userId
     if request.method == 'GET':
         return render_template('login.html')
     else:
         login = request.form['login']
         password = request.form['password']
-        stubAuthUser(login, password)
-        return login + ' ' + password
+        userId = storage.getUser(login, password)
+        if userId:
+            madeHtmlRecomendation()
+            return render_template('recommendation.html')
+        else:
+            return render_template('invalidLogin.html')
+
 
 @app.route('/signup', methods = ['GET', 'POST'])
 def signupPage():
@@ -29,7 +131,7 @@ def signupPage():
         name = request.form['name']
         login = request.form['login']
         password = request.form['password']
-        stubCreateUser(name, login, password)
+        storage.createUser(login, password, name)
         return render_template('sucessfullSignup.html')
 
 if __name__ == '__main__':
