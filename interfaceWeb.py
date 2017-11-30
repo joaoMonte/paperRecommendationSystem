@@ -14,7 +14,7 @@ user_login='anyone'
 
 def getRecomendation(all_ratings):
     global user_login
-    r = Recommender(all_ratings)
+    r = Recommender(all_ratings,2)
     r.computeDeviations() # calc similarity matrix
     user_ratings = all_ratings[user_login]# aqui vai ser o vetor de avaliacoes que vem do BD
     result = r.slopeOneRecommendations(user_ratings)
@@ -78,6 +78,25 @@ def generatePaperPage(paperId):
     fileHtml.write(html)
     fileHtml.close()
 
+def addNameRecommendations(recommendations):
+    recommendationsNames=[]
+    #print(recommendations)
+    allPapers=storage.getAllpapers()
+    for paper in allPapers:
+        for i in range (0, len(recommendations)):
+            recommendationEntry={}
+            #print(recommendations[i][0],paper['_id'])
+            if recommendations[i][0]==str(paper['_id']):
+                recommendationEntry['id']=recommendations[i][0]
+                recommendationEntry['rating']=recommendations[i][1]
+                recommendationEntry['title']=paper['title']
+
+                recommendationsNames.append(recommendationEntry)
+        if len(recommendationsNames)==len(recommendations):
+            break
+    return recommendationsNames
+
+
 @app.route('/uploadPaper', methods=['GET', 'POST'])
 def uploadPaper():
     global userId
@@ -94,9 +113,15 @@ def uploadPaper():
 
 @app.route('/mainPage', methods=['GET'])
 def userMainPage():
-    global userId
-    madeHtmlRecomendation()
-    return render_template('recommendation.html')
+    global userId, user_login
+    all_ratings=storage.getAllEvaluations()
+    allPapers = storage.getAllpapers()
+    recommendations=getRecomendation(all_ratings)
+    recommendationTitles=addNameRecommendations(recommendations)
+    #print(recommendationTitles)
+
+    return render_template('recommendation.html',recom=recommendationTitles,papers=allPapers)
+    #madeHtmlRecomendation()
 
 @app.route('/evaluations')
 def getEVal():
@@ -111,8 +136,9 @@ def getEVal():
 def paperPage(paperId):
     global userId
     if request.method == 'GET':
-        generatePaperPage(paperId)
-        return render_template('paper.html')
+        #generatePaperPage(paperId)
+        paperJson = storage.getPaper(paperId)
+        return render_template('paper.html',paper=paperJson)
     else:
         paperGrade = request.form['score']
         storage.addEvaluation(userId, paperId, paperGrade)
@@ -130,8 +156,7 @@ def loginPage():
         userId = storage.getUser(login, password)
         if userId:
             user_login=login
-            madeHtmlRecomendation()
-            return render_template('recommendation.html')
+            return redirect('/mainPage')
         else:
             return render_template('invalidLogin.html')
 

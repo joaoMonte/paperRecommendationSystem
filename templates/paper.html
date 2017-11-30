@@ -1,9 +1,44 @@
-<html><body>
-            <p> Paper </p> <p> - author : Linkin Park</p><p> - link : https://www.google.com.br/url?sa=t&rct=j&q=&esrc=s&source=web&cd=1&cad=rja&uact=8&ved=0ahUKEwjyzL_9meTXAhXFl5AKHe-JApwQyCkIKjAA&url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3DvjVkXlxsO8Q&usg=AOvVaw1J8g57cGZyoN6fXfLR3RgA</p><p> - title : papercut</p><p> - year : 2000</p><form method="POST">
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>Recomendation System</title>
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css">
 
-    <br> Evaluate this paper <input type="text" name="score"></br>
-    <input type="submit" value="Ok">
+  <link rel='stylesheet prefetch' href='https://fonts.googleapis.com/css?family=Roboto:400,100,300,500,700,900|RobotoDraft:400,100,300,500,700,900'>
+<link rel='stylesheet prefetch' href='https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css'>
+
+      <link rel="stylesheet" href="../static/css/style.css">
+
+  
+</head>
+
+<body>
+  
+<!-- Form Mixin-->
+<!-- Input Mixin-->
+<!-- Button Mixin-->
+<!-- Pen Title-->
+<!-- Form Module-->
+<div class="module form-module">
+  <div class="form">
+  </div>
+  <div class="form">
+    <h2>Evaluate this paper</h2>
+    <form method="POST">
+	<p> Title: {{paper['title']}} </p>
+	<p> Link: {{paper['link']}} </p>
+	<p> Author: {{paper['author']}} </p>
+	<p> Year: {{paper['year']}} </p>
+      <input type="text" placeholder="Score" name="score"/>
+      <button>Evaluate</button>
     </form>
     <p> <a href="/mainPage"> << Back </a></p>
+  </div>
+</div>
+  <script src='http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js'></script>
+    <script  src="../static/js/index.js"></script>
 
-    </body></html>
+</body>
+</html>
