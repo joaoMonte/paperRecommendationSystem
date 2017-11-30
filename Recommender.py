@@ -79,7 +79,7 @@ class Recommender:
                   self.frequencies[item].setdefault(item2, 0)
                   self.deviations[item].setdefault(item2, 0.0)
                   self.frequencies[item][item2] += 1
-                  self.deviations[item][item2] += rating - rating2
+                  self.deviations[item][item2] += float(rating) - float(rating2)
 
       for (item, ratings) in self.deviations.items():
          for item2 in ratings:
@@ -101,7 +101,7 @@ class Recommender:
                # add to the running sum representing the numerator
                # of the formula
                recommendations[diffItem] += (diffRatings[userItem] +
-                                             userRating) * freq
+                                             float(userRating)) * freq
                # keep a running sum of the frequency of diffitem
                frequencies[diffItem] += freq
       recommendations =  [(self.convertProductID2name(k),

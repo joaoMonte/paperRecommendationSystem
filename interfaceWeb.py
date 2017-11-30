@@ -3,24 +3,36 @@ import urllib3
 import json
 from datetime import datetime, timedelta
 import storage
-import Recommender
+from Recommender import Recommender
 
 app = Flask(__name__)
 
 example = [('Formal methods', 3.217777777777778), ('Programming language theory', 3.1928571428571435), ('Concurrency', 3.145), ('Software engineering', 2.5421428571428573), ('Databases', 2.488)]
 userId = '1234567'
+user_login='anyone'
 
 
-def getRecomendation(user):
-    r = Recommender(user)
+def getRecomendation(all_ratings):
+    global user_login
+    r = Recommender(all_ratings)
     r.computeDeviations() # calc similarity matrix
-    user_raintgs = example[user]# aqui vai ser o vetor de avaliacoes que vem do BD
-    result = r.slopeOneRecommendations(user_raintgs)
+    user_ratings = all_ratings[user_login]# aqui vai ser o vetor de avaliacoes que vem do BD
+    result = r.slopeOneRecommendations(user_ratings)
+    #print(user_login)
+    #print(all_ratings)
+    #print(result)
+    return result
 
 def madeHtmlRecomendation():
     #papers = getRecomendation(user)
+    global userId
     allPapers = storage.getAllpapers()
-    papers = example
+    #get results
+    all_ratings=storage.getAllEvaluations()
+    #print(userRatings)
+    recom=getRecomendation(all_ratings)
+    papers = recom
+    #print(recom)
     fileHtml = open('templates/recommendation.html', 'w')
     html = '''<html><body>
         <p> <a href="/uploadPaper"> Upload a paper! </a> </p>
@@ -109,7 +121,7 @@ def paperPage(paperId):
 
 @app.route('/login', methods=['GET', 'POST'])
 def loginPage():
-    global userId
+    global userId,user_login
     if request.method == 'GET':
         return render_template('login.html')
     else:
@@ -117,6 +129,7 @@ def loginPage():
         password = request.form['password']
         userId = storage.getUser(login, password)
         if userId:
+            user_login=login
             madeHtmlRecomendation()
             return render_template('recommendation.html')
         else:
