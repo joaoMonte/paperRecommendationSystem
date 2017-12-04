@@ -26,9 +26,9 @@
       <button>Upload a paper</button>
     </form>
   <div class="form">
-    <h2>Recommendend papers for you: </h2>
+    <h2>Recommendend papers for {{login}}: </h2>
     {% for item in recom %}
-	<a href="/paper/{{item['id']}}">{{item['title']}} </a>
+	<a href="/paper/{{item['id']}}">{{item['title']}} ({{item['rating']|round(1, 'ceil')}}) </a>
 	<br />
     {% endfor %}
 	<br />
@@ -40,6 +40,19 @@
     <br />
     {% endfor %}
   </div>
+ <div class="form-module">
+    </br>
+    <div class="form">
+	    <h2>Users recommended </h2>
+	    {% for user in users %}
+	    <a>{{user[0]}} ({{user[1]}})</a>
+	    <br />
+	    {% endfor %}
+	  </div>
+    </div>
+<a href="/login">Logout </a> 
+
+</div>
 
   
   <script src='http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js'></script>

@@ -123,8 +123,8 @@ class Recommender:
       for key in rating1:
          if key in rating2:
             n += 1
-            x = rating1[key]
-            y = rating2[key]
+            x = float(rating1[key])
+            y = float(rating2[key])
             sum_xy += x * y
             sum_x += x
             sum_y += y
@@ -153,6 +153,7 @@ class Recommender:
       # sort based on distance -- closest first
       distances.sort(key=lambda artistTuple: artistTuple[1],
                      reverse=True)
+      print(distances)
       return distances
 
    def recommend(self, user):

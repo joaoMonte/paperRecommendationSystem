@@ -18,10 +18,12 @@ def getRecomendation(all_ratings):
     r.computeDeviations() # calc similarity matrix
     user_ratings = all_ratings[user_login]# aqui vai ser o vetor de avaliacoes que vem do BD
     result = r.slopeOneRecommendations(user_ratings)
+    print(r.data)
+    users_recom=r.computeNearestNeighbor(str(user_login))
     #print(user_login)
     #print(all_ratings)
     #print(result)
-    return result
+    return result,users_recom
 
 def madeHtmlRecomendation():
     #papers = getRecomendation(user)
@@ -86,7 +88,7 @@ def addNameRecommendations(recommendations):
         for i in range (0, len(recommendations)):
             recommendationEntry={}
             #print(recommendations[i][0],paper['_id'])
-            if recommendations[i][0]==str(paper['_id']):
+            if str(recommendations[i][0])==str(paper['_id']):
                 recommendationEntry['id']=recommendations[i][0]
                 recommendationEntry['rating']=recommendations[i][1]
                 recommendationEntry['title']=paper['title']
@@ -114,14 +116,18 @@ def uploadPaper():
 @app.route('/mainPage', methods=['GET'])
 def userMainPage():
     global userId, user_login
-    all_ratings=storage.getAllEvaluations()
-    allPapers = storage.getAllpapers()
-    recommendations=getRecomendation(all_ratings)
-    recommendationTitles=addNameRecommendations(recommendations)
-    #print(recommendationTitles)
-
-    return render_template('recommendation.html',recom=recommendationTitles,papers=allPapers)
-    #madeHtmlRecomendation()
+    if user_login=="anyone":
+        return redirect('/login')
+    else:
+        all_ratings=storage.getAllEvaluations()
+        allPapers = storage.getAllpapers()
+        recommendations,users_recom=getRecomendation(all_ratings)
+        recommendationTitles=addNameRecommendations(recommendations)
+        correlated_users=[]
+        for user in users_recom:
+            if user[1]>0:
+                correlated_users.append(user)
+        return render_template('recommendation.html',recom=recommendationTitles,papers=allPapers,users=correlated_users,login=user_login)
 
 @app.route('/evaluations')
 def getEVal():
