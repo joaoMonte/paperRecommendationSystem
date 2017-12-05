@@ -11,6 +11,12 @@ example = [('Formal methods', 3.217777777777778), ('Programming language theory'
 userId = '1234567'
 user_login='anyone'
 
+def normalizeRecommendations(recommendations):
+    for i in range(0,len(recommendations)):
+        #print(recommendations[i])
+        minimum=min(recommendations[i][1],5.0)
+        recommendations[i]=(recommendations[i][0],minimum)
+    return recommendations
 
 def getRecomendation(all_ratings):
     global user_login
@@ -18,12 +24,15 @@ def getRecomendation(all_ratings):
     r.computeDeviations() # calc similarity matrix
     user_ratings = all_ratings[user_login]# aqui vai ser o vetor de avaliacoes que vem do BD
     result = r.slopeOneRecommendations(user_ratings)
-    print(r.data)
+    recommendations=normalizeRecommendations(result)
+    #print(r.data)
     users_recom=r.computeNearestNeighbor(str(user_login))
     #print(user_login)
     #print(all_ratings)
     #print(result)
-    return result,users_recom
+    print("Recommendations")
+    print(recommendations)
+    return recommendations,users_recom
 
 def madeHtmlRecomendation():
     #papers = getRecomendation(user)
